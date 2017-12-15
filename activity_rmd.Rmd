@@ -1,0 +1,72 @@
+---
+title: "Reproducible Research Assignment 1"
+author: "saruulalt"
+date: "December 15, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## About Assignment
+
+This project makes use of data from a personal activity monitoring device. This device collects data at 5 minute intervals through out the day. The data consists of two months of data from an anonymous individual collected during the months of October and November, 2012 and include the number of steps taken in 5 minute intervals each day. The goal of this project is to write a report that answers the questions detailed below.
+
+## Loading the Data
+
+```{r}
+
+data <- read.csv("activity.csv", header = TRUE, sep = ",", na.strings = "NA")
+
+```
+
+#### Let's see what the data looks like using the head():
+
+```{r}
+head(data)
+```
+
+#### Also, let's look at some summary statistics
+
+For example, using the summary():
+
+```{r}
+summary(data)
+```
+
+## Preproccessing
+
+Before we get to the main question, we need to do a little bit of preprocessing. It is useful to use the str() to get quick information about the structure of the data frame including the class of each variable. 
+
+```{r}
+str(data)
+```
+
+We see that we have to convert 'date' variable to Date classes and 'interval' to a factor.
+
+```{r}
+data$date <- as.Date(data$date, format = "%Y-%m-%d")
+data$interval <- factor(data$interval)
+```
+
+Lastly, we have to remove the missing values from 'steps' variable. 
+
+```{r}
+NA_index <- is.na(as.character(data$steps))
+df_no_NA <- data[!NA_index,]
+head(df_no_NA)
+```
+
+Now we are ready to answer the main questions.
+
+##Questions
+
+####Question 1: What is mean total number of steps taken per day?
+
+####Question 2: What is the average daily activity pattern? 
+
+####Question 3: Are there differences in activity patterns between weekdays and weekends?
+
+
+
