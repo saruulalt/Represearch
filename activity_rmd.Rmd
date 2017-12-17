@@ -50,12 +50,12 @@ data$date <- as.Date(data$date, format = "%Y-%m-%d")
 data$interval <- factor(data$interval)
 ```
 
-Lastly, we have to remove the missing values from 'steps' variable. 
+Lastly, we can remove the missing values from 'steps' variable here in preprocessing or later. 
 
 ```{r}
 NA_index <- is.na(as.character(data$steps))
-df_no_NA <- data[!NA_index,]
-head(df_no_NA)
+df<- data[!NA_index,]
+head(df)
 ```
 
 Now we are ready to answer the main questions.
@@ -64,9 +64,45 @@ Now we are ready to answer the main questions.
 
 ####Question 1: What is mean total number of steps taken per day?
 
+```{r}
+#notice you can remove NA's here as well
+totalSteps <- aggregate(steps ~ date, data = df, sum, na.rm = TRUE)
+
+```
+First, we make a  histogram:
+
+```{r}
+hist(as.numeric(totalSteps$steps), breaks = 20, col = "blue", xlab = "Number of Steps", main= "Histogram of Total Number of Steps per Day")
+```
+
+Then, calculate mean and median:
+
+```{r}
+mean(totalSteps$steps)
+median(totalSteps$steps)
+```
+
 ####Question 2: What is the average daily activity pattern? 
 
-####Question 3: Are there differences in activity patterns between weekdays and weekends?
+We can use aggregrate functino with mean to calculate average across recorded intervals:
+
+```{r}
+steps_interval <- aggregate(steps ~ interval, data = df, mean, na.rm = TRUE)
+```
+
+Let's see how it looks when plotted:
+
+```{r}
+plot(steps ~ interval, data = steps_interval, type = "l", xlab = "5-Min Intervals (5-minute)", ylab = "Average Number of Steps", main = "Average Daily Activity at 5 minute Intervals",  col = "blue")
+```
+
+
+####Question 3: How could we control for bias caused by removing missing values?
+
+
+
+
+####Question 4: Are there differences in activity patterns between weekdays and weekends?
 
 
 
