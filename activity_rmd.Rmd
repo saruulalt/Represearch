@@ -82,6 +82,10 @@ mean(totalSteps$steps)
 median(totalSteps$steps)
 ```
 
+```{r}
+summary(totalSteps$steps)
+```
+
 ####Question 2: What is the average daily activity pattern? 
 
 We can use aggregrate functino with mean to calculate average across recorded intervals:
@@ -99,8 +103,74 @@ plot(steps ~ interval, data = steps_interval, type = "l", xlab = "5-Min Interval
 
 ####Question 3: How could we control for bias caused by removing missing values?
 
+The presence of missing days may introduce bias into some calculations or summaries of the data. We need to devise a strategy for filling in all of the missing values in the dataset. One way is to fill it in with the mean/median for the day or the 5-min interval. 
+
+Let's start by calculating total number of missing values per variable.
+
+Steps:
+
+```{r}
+sum(is.na(as.character(data$steps)))
+```
+
+Date:
+
+```{r}
+sum(is.na(as.character(data$date)))
+
+```
+
+Interval:
+
+```{r}
+sum(is.na(as.character(data$interval)))
+
+```
+
+We see that we are only missing from 'steps' variable, a total of 2304 values.
+
+```{r}
+library(dplyr)
+
+mean_per_interval <- data %>% group_by(interval) %>%
+      summarize(mean.steps = mean(steps, na.rm = T))
+```
 
 
+```{r}
+fill_data <- data
+```
+
+```{r}
+for (i in 1:nrow(fill_data)) {
+      if (is.na(fill_data$steps[i])) {
+            index <- fill_data$interval[i]
+            value <- subset(mean_per_interval, interval==index)
+            fill_data$steps[i] <- value$mean.steps
+      }
+}
+head(fill_data)
+```
+
+
+```{r}
+new_totalSteps <- aggregate(steps ~ date, data = fill_data, sum, na.rm = TRUE)
+
+```
+
+```{r}
+hist(as.numeric(new_totalSteps$steps), breaks = 20, col = "blue", xlab = "Number of Steps", main= "Histogram of Total Number of Steps per Day Revised")
+```
+
+```{r}
+summary(totalSteps$steps)
+```
+
+```{r}
+summary(new_totalSteps$steps)
+```
+
+The mean and median stay the same but we see some change in the 1st quartile.
 
 ####Question 4: Are there differences in activity patterns between weekdays and weekends?
 
