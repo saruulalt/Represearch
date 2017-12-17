@@ -88,7 +88,7 @@ summary(totalSteps$steps)
 
 ####Question 2: What is the average daily activity pattern? 
 
-We can use aggregrate functino with mean to calculate average across recorded intervals:
+We can use aggregrate function with mean to calculate average across recorded intervals:
 
 ```{r}
 steps_interval <- aggregate(steps ~ interval, data = df, mean, na.rm = TRUE)
@@ -97,13 +97,13 @@ steps_interval <- aggregate(steps ~ interval, data = df, mean, na.rm = TRUE)
 Let's see how it looks when plotted:
 
 ```{r}
-plot(steps ~ interval, data = steps_interval, type = "l", xlab = "5-Min Intervals (5-minute)", ylab = "Average Number of Steps", main = "Average Daily Activity at 5 minute Intervals",  col = "blue")
+plot(steps ~ interval, data = steps_interval, type = "p", xlab = "5-Min Intervals (5-minute)", ylab = "Average Number of Steps", main = "Average Daily Activity at 5 minute Intervals",  col = "blue")
 ```
 
 
 ####Question 3: How could we control for bias caused by removing missing values?
 
-The presence of missing days may introduce bias into some calculations or summaries of the data. We need to devise a strategy for filling in all of the missing values in the dataset. One way is to fill it in with the mean/median for the day or the 5-min interval. 
+The presence of missing days may introduce bias into some calculations or summaries of the data. We need to devise a strategy for filling in all of the missing values in the dataset. One way is to fill it in with the mean/median for the day or the 5-min interval. Here I will take the mean for 5-min intervals.
 
 Let's start by calculating total number of missing values per variable.
 
@@ -129,6 +129,7 @@ sum(is.na(as.character(data$interval)))
 
 We see that we are only missing from 'steps' variable, a total of 2304 values.
 
+Next, we need to take the mean so we can fill it in the NAs. Below I am using the dplyr library(need to be installed if you do not have it yet) to conveniently group the interval step values and taking the mean:
 ```{r}
 library(dplyr)
 
@@ -136,11 +137,12 @@ mean_per_interval <- data %>% group_by(interval) %>%
       summarize(mean.steps = mean(steps, na.rm = T))
 ```
 
-
+Then, we prepare a copy of exiting data:
 ```{r}
 fill_data <- data
 ```
 
+Now, the filling part:
 ```{r}
 for (i in 1:nrow(fill_data)) {
       if (is.na(fill_data$steps[i])) {
@@ -152,6 +154,7 @@ for (i in 1:nrow(fill_data)) {
 head(fill_data)
 ```
 
+To confirm differences, let' make a new histogram with the newly created set 'fill_data':
 
 ```{r}
 new_totalSteps <- aggregate(steps ~ date, data = fill_data, sum, na.rm = TRUE)
@@ -162,6 +165,7 @@ new_totalSteps <- aggregate(steps ~ date, data = fill_data, sum, na.rm = TRUE)
 hist(as.numeric(new_totalSteps$steps), breaks = 20, col = "blue", xlab = "Number of Steps", main= "Histogram of Total Number of Steps per Day Revised")
 ```
 
+For a quick look we can use the summary() on the two datasets: 1st with NA removed, and 2nd with NA filled:
 ```{r}
 summary(totalSteps$steps)
 ```
@@ -170,9 +174,26 @@ summary(totalSteps$steps)
 summary(new_totalSteps$steps)
 ```
 
-The mean and median stay the same but we see some change in the 1st quartile.
+The mean and median are pretty muchstay the same but we see some change in the 1st quartile.
 
 ####Question 4: Are there differences in activity patterns between weekdays and weekends?
+
+Let's start by distinguishing weekday & weekend by using weekdays():
+
+```{r}
+#Creating a new variable 'day' to make a distinction
+fill_data$day <- ifelse(weekdays(fill_data$date) %in% c("Saturday", "Sunday"), "Weekend", "Weekday")
+
+```
+
+Then we can use the lattice graphing tools to easily make a comparative graph for weekday vs. weekend.
+```{r}
+steps_interval= aggregate(steps ~ interval + day, fill_data, mean, na.rm = TRUE )
+library(lattice)
+xyplot(steps ~ interval | factor(day), data = steps_interval, aspect = 1/2, 
+       type = "l")
+```
+
 
 
 
